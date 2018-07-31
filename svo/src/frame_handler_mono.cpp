@@ -83,6 +83,11 @@ void FrameHandlerMono::addImage(const cv::Mat& img, const double timestamp)
 
   // set last frame
   last_frame_ = new_frame_;
+
+  //form svo_edgelet https://github.com/HeYijia/svo_edgelet.git
+  if(new_frame_->isKeyframe())
+    last_kf_ = new_frame_;
+
   new_frame_.reset();
   // finish processing
   finishFrameProcessingCommon(last_frame_->id_, res, last_frame_->nObs());
@@ -301,8 +306,48 @@ void FrameHandlerMono::setFirstFrame(const FramePtr& first_frame)
   stage_ = STAGE_DEFAULT_FRAME;
 }
 
+#if 0
 bool FrameHandlerMono::needNewKf(double scene_depth_mean)
 {
+  for(auto it=overlap_kfs_.begin(), ite=overlap_kfs_.end(); it!=ite; ++it)
+  {
+    Vector3d relpos = new_frame_->w2f(it->first->pos());
+    if(fabs(relpos.x())/scene_depth_mean < Config::kfSelectMinDist() &&
+       fabs(relpos.y())/scene_depth_mean < Config::kfSelectMinDist()*0.8 &&
+       fabs(relpos.z())/scene_depth_mean < Config::kfSelectMinDist()*1.3)
+      return false;
+  }
+  return true;
+}
+#endif
+
+
+//form svo_edgelet https://github.com/HeYijia/svo_edgelet.git
+bool FrameHandlerMono::needNewKf(double scene_depth_mean)
+{
+
+  vector< double> pixel_dist;
+   int cnt=0;
+   for(auto it = last_kf_->fts_.begin(), it_end= last_kf_->fts_.end(); it != it_end; ++it)
+   {
+     // check if the feature has a mappoint assigned
+     if((*it)->point == NULL)
+       continue;
+
+     Vector2d px1(new_frame_->w2c((*it)->point->pos_));
+     Vector2d px2(last_kf_->w2c((*it)->point->pos_));
+     Vector2d temp = px1-px2;
+     pixel_dist.push_back(temp.norm());
+     cnt++;
+     if(cnt > 30) break;
+   }
+
+  double d = vk::getMedian(pixel_dist);
+  if(d > 40)   //40
+  {
+    return true;
+  }
+
   for(auto it=overlap_kfs_.begin(), ite=overlap_kfs_.end(); it!=ite; ++it)
   {
     Vector3d relpos = new_frame_->w2f(it->first->pos());

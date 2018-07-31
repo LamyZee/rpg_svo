@@ -65,6 +65,8 @@ protected:
   Reprojector reprojector_;                     //!< Projects points from other keyframes into the current frame
   FramePtr new_frame_;                          //!< Current frame.
   FramePtr last_frame_;                         //!< Last frame, not necessarily a keyframe.
+  //form svo_edgelet https://github.com/HeYijia/svo_edgelet.git
+  FramePtr last_kf_;                            // hyj: used to last_kf_ to judge the view changes, add new keyframe
   set<FramePtr> core_kfs_;                      //!< Keyframes in the closer neighbourhood.
   vector< pair<FramePtr,size_t> > overlap_kfs_; //!< All keyframes with overlapping field of view. the paired number specifies how many common mappoints are observed TODO: why vector!?
   initialization::KltHomographyInit klt_homography_init_; //!< Used to estimate pose of the first two keyframes by estimating a homography.
