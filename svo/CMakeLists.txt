@@ -3,7 +3,7 @@
 
 SET(TRACE TRUE)
 SET(HAVE_G2O FALSE) 
-SET(USE_ROS TRUE) # Set FALSE if you want to build this package without Catkin
+SET(USE_ROS FALSE) # Set FALSE if you want to build this package without Catkin
 SET(DEBUG_OUTPUT FALSE) # Only relevant if build without ROS
 
 ################################################################################
@@ -48,19 +48,21 @@ SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -fsee -fomit-frame-pointer -
 FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(Eigen REQUIRED)
 FIND_PACKAGE(Sophus REQUIRED)
-FIND_PACKAGE(fast REQUIRED)
+#FIND_PACKAGE(fast REQUIRED)
 FIND_PACKAGE(Boost REQUIRED COMPONENTS thread system)
 
 IF(USE_ROS)
-  FIND_PACKAGE(catkin REQUIRED COMPONENTS roscpp roslib cmake_modules vikit_common vikit_ros)
+# FIND_PACKAGE(catkin REQUIRED COMPONENTS roscpp roslib cmake_modules vikit_common vikit_ros) 
+ FIND_PACKAGE(catkin REQUIRED COMPONENTS roscpp roslib cmake_modules)
   catkin_package(
-      DEPENDS Eigen OpenCV Sophus Boost fast
-      CATKIN_DEPENDS roscpp roslib vikit_common vikit_ros
+      DEPENDS Eigen OpenCV Sophus Boost
+      CATKIN_DEPENDS roscpp roslib
+#      CATKIN_DEPENDS roscpp roslib vikit_common vikit_ros fast
       INCLUDE_DIRS include
       LIBRARIES svo
   )
 ELSE()
-  FIND_PACKAGE(vikit_common REQUIRED)
+#  FIND_PACKAGE(vikit_common REQUIRED)
   SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
   SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 ENDIF()
@@ -72,7 +74,9 @@ INCLUDE_DIRECTORIES(
   ${OpenCV_INCLUDE_DIRS}
   ${Sophus_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
-  ${fast_INCLUDE_DIRS}
+#  ${fast_INCLUDE_DIRS}
+  ${PROJECT_SOURCE_DIR}/3rd/fast/include/
+  ${PROJECT_SOURCE_DIR}/3rd/vikit/include/
 )
 
 # Set link libraries
@@ -80,7 +84,7 @@ LIST(APPEND LINK_LIBS
   ${OpenCV_LIBS}
   ${Sophus_LIBRARIES}
   ${Boost_LIBRARIES}
-  ${fast_LIBRARIES}
+#  ${fast_LIBRARIES}
 )
 
 IF(USE_ROS)
@@ -93,6 +97,20 @@ ENDIF()
 
 # Set sourcefiles
 LIST(APPEND SOURCEFILES
+  3rd/fast/src/fast_10.cpp
+  3rd/fast/src/fast_10_score.cpp
+  3rd/fast/src/faster_corner_10_sse.cpp
+  3rd/fast/src/nonmax_3x3.cpp
+  3rd/vikit/src/atan_camera.cpp
+  3rd/vikit/src/img_align.cpp
+  3rd/vikit/src/omni_camera.cpp
+  3rd/vikit/src/pinhole_camera.cpp
+  3rd/vikit/src/user_input_thread.cpp
+  3rd/vikit/src/homography.cpp
+  3rd/vikit/src/math_utils.cpp
+  3rd/vikit/src/performance_monitor.cpp
+  3rd/vikit/src/robust_cost.cpp
+  3rd/vikit/src/vision.cpp
   src/frame_handler_mono.cpp
   src/frame_handler_base.cpp
   src/frame.cpp
